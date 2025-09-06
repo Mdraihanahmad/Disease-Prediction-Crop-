@@ -1,22 +1,66 @@
 import streamlit as st
-import tensorflow as tf
 import numpy as np
+from PIL import Image
+import tensorflow as tf
 
+# --------------------------
+# Load TFLite Model
+# --------------------------
 @st.cache_resource
 def load_model():
-    return tf.keras.models.load_model("trained_plant_disease_model.keras")
+    interpreter = tf.lite.Interpreter(model_path="plant_disease_model.tflite")
+    interpreter.allocate_tensors()
+    return interpreter
 
-model = load_model()
+interpreter = load_model()
+
+# Get input & output details
+input_details = interpreter.get_input_details()
+output_details = interpreter.get_output_details()
 
 # --------------------------
 # Prediction Function
 # --------------------------
 def model_prediction(test_image):
-    image = tf.keras.preprocessing.image.load_img(test_image, target_size=(128,128))
-    input_arr = tf.keras.preprocessing.image.img_to_array(image)
-    input_arr = np.array([input_arr])  # convert single image to batch
-    predictions = model.predict(input_arr)
-    return np.argmax(predictions)  # return index of max element
+    # Preprocess image
+    image = Image.open(test_image).resize((128,128))
+    input_arr = np.array(image, dtype=np.float32)
+    input_arr = np.expand_dims(input_arr, axis=0)  # add batch dimension
+
+    # Run inference
+    interpreter.set_tensor(input_details[0]['index'], input_arr)
+    interpreter.invoke()
+    predictions = interpreter.get_tensor(output_details[0]['index'])
+    return np.argmax(predictions)
+
+
+# import streamlit as st
+# import tensorflow as tf
+# import numpy as np
+
+# import tensorflow as tf
+
+# model = tf.keras.models.load_model("trained_plant_disease_model.keras")
+# converter = tf.lite.TFLiteConverter.from_keras_model(model)
+# tflite_model = converter.convert()
+
+# with open("plant_disease_model.tflite", "wb") as f:
+#     f.write(tflite_model)
+# @st.cache_resource
+# def load_model():
+#     return tf.keras.models.load_model("trained_plant_disease_model.keras")
+
+# model = load_model()
+
+# # --------------------------
+# # Prediction Function
+# # --------------------------
+# def model_prediction(test_image):
+#     image = tf.keras.preprocessing.image.load_img(test_image, target_size=(128,128))
+#     input_arr = tf.keras.preprocessing.image.img_to_array(image)
+#     input_arr = np.array([input_arr])  # convert single image to batch
+#     predictions = model.predict(input_arr)
+#     return np.argmax(predictions)  # return index of max element
 
 
 # #Tensorflow Model Prediction
