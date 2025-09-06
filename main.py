@@ -2,15 +2,31 @@ import streamlit as st
 import tensorflow as tf
 import numpy as np
 
+@st.cache_resource
+def load_model():
+    return tf.keras.models.load_model("trained_plant_disease_model.keras")
 
-#Tensorflow Model Prediction
+model = load_model()
+
+# --------------------------
+# Prediction Function
+# --------------------------
 def model_prediction(test_image):
-    model = tf.keras.models.load_model("trained_plant_disease_model.keras")
-    image = tf.keras.preprocessing.image.load_img(test_image,target_size=(128,128))
+    image = tf.keras.preprocessing.image.load_img(test_image, target_size=(128,128))
     input_arr = tf.keras.preprocessing.image.img_to_array(image)
-    input_arr = np.array([input_arr]) #convert single image to batch
+    input_arr = np.array([input_arr])  # convert single image to batch
     predictions = model.predict(input_arr)
-    return np.argmax(predictions) #return index of max element
+    return np.argmax(predictions)  # return index of max element
+
+
+# #Tensorflow Model Prediction
+# def model_prediction(test_image):
+#     model = tf.keras.models.load_model("trained_plant_disease_model.keras")
+#     image = tf.keras.preprocessing.image.load_img(test_image,target_size=(128,128))
+#     input_arr = tf.keras.preprocessing.image.img_to_array(image)
+#     input_arr = np.array([input_arr]) #convert single image to batch
+#     predictions = model.predict(input_arr)
+#     return np.argmax(predictions) #return index of max element
 
 #Sidebar
 st.sidebar.title("Dashboard")
