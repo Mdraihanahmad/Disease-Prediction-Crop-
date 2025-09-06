@@ -1,14 +1,14 @@
 import streamlit as st
 import numpy as np
+import tflite_runtime.interpreter as tflite
 from PIL import Image
-import tensorflow as tf
 
 # --------------------------
 # Load TFLite Model
 # --------------------------
 @st.cache_resource
 def load_model():
-    interpreter = tf.lite.Interpreter(model_path="plant_disease_model.tflite")
+    interpreter = tflite.Interpreter(model_path="plant_disease_model.tflite")
     interpreter.allocate_tensors()
     return interpreter
 
