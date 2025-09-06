@@ -4,19 +4,14 @@ from PIL import Image
 import tensorflow as tf
 
 # --------------------------
-# Load TFLite Model
+# Load Keras Model
 # --------------------------
 @st.cache_resource
 def load_model():
-    interpreter = tf.lite.Interpreter(model_path="plant_disease_model.tflite")
-    interpreter.allocate_tensors()
-    return interpreter
+    model = tf.keras.models.load_model("trained_plant_disease_model.keras")
+    return model
 
-interpreter = load_model()
-
-# Get input & output details
-input_details = interpreter.get_input_details()
-output_details = interpreter.get_output_details()
+model = load_model()
 
 # --------------------------
 # Prediction Function
@@ -27,12 +22,9 @@ def model_prediction(test_image):
     input_arr = np.array(image, dtype=np.float32) / 255.0  # normalize
     input_arr = np.expand_dims(input_arr, axis=0)  # add batch dimension
 
-    # Run inference
-    interpreter.set_tensor(input_details[0]['index'], input_arr)
-    interpreter.invoke()
-    predictions = interpreter.get_tensor(output_details[0]['index'])
+    # Predict
+    predictions = model.predict(input_arr)
     return np.argmax(predictions)
-
 
 # --------------------------
 # Class Labels
